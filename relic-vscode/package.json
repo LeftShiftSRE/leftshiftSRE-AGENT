@@ -1,0 +1,25 @@
+[project]
+name = "relic-vscode"
+version = "0.1.0"
+description = "Relic SRE Agent — VS Code Extension"
+displayName = "Relic SRE Agent"
+publisher = "leftshiftsre"
+license = "MIT"
+repository = "https://github.com/leftshiftsre/relic"
+engines = {vscode = "^1.90.0"}
+categories = ["Other", "Developer Tools"]
+keywords = ["sre", "observability", "mcp", "splunk"]
+
+[scripts]
+vscode:prepublish = "npm run compile"
+compile = "tsc -p ./"
+watch = "tsc -watch"
+
+[dependencies]
+"@modelcontextprotocol/sdk" = "^1.0.0"
+vscode = "^1.1.37"
+
+[dev-dependencies]
+"@types/node" = "^20.0.0"
+"@types/vscode" = "^1.90.0"
+typescript = "^5.4.0"

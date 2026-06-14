@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "relic"
+version = "0.1.0"
+description = "Code-Aware SRE Agent — structural context for LLM-powered observability"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [{name = "LeftshiftSRE"}]
+keywords = ["sre", "observability", "mcp", "tree-sitter", "context-engine"]
+classifiers = ["Development Status :: 3 - Alpha"]
+
+dependencies = [
+    "tree-sitter>=0.23.1",
+    "tree-sitter-python>=0.23.4",
+    "pyyaml>=6.0.2",
+    "gitpython>=3.1.43",
+    "httpx>=0.27.2",
+    "mcp>=1.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-mock>=3.14.0",
+    "ruff>=0.6.0",
+]
+
+[project.scripts]
+relic = "relic.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
