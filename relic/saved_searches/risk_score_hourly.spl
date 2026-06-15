@@ -1,0 +1,23 @@
+| inputlookup code_service_lookup
+| eval blast_radius=0, incidents=0, p99=0
+| join type=left service, operation [
+    search index=incidents earliest=-30d
+    | stats count as incidents by service, operation
+]
+| join type=left service, operation [
+    search index=apm metric=latency_p99_ms earliest=-24h
+    | stats latest(value) as p99 by service, operation
+]
+| eval features=blast_radius . "," . incidents . "," . p99
+| makemv delim="," features
+| eval model_type=if(exists(app:risk_anomaly_model), "MLTKAnomalyDetector", "anomaly")
+| anomaly features
+| eval risk_level=case(
+    risk_score >= 70, "critical",
+    risk_score >= 40, "high",
+    risk_score >= 20, "medium",
+    1=1, "low"
+  )
+| eval confidence=round(confidence * 100)
+| fields node_id, service, operation, risk_score, risk_level, blast_radius, incidents, p99, confidence
+| collect index=risk_score_summary

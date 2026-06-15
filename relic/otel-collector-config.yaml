@@ -1,0 +1,46 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    send_batch_size: 8192
+    timeout: 200ms
+  filter/audit:
+    error_mode: ignore
+    traces:
+      span:
+        - 'attributes["audit.class"] == "security"'
+
+exporters:
+  splunk_hec/fast:
+    token: ${env:SPLUNK_HEC_FAST}
+    endpoint: https://splunk:8088
+    source: otel
+    sourcetype: _json
+    index: main
+  splunk_hec/audit:
+    token: ${env:SPLUNK_HEC_AUDIT}
+    endpoint: https://splunk:8088
+    source: otel-audit
+    sourcetype: _json
+    index: audit
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [splunk_hec/fast]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [splunk_hec/fast]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [splunk_hec/fast]

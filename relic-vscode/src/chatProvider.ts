@@ -29,14 +29,14 @@ export class ChatProvider {
 
   async show(): Promise<void> {
     if (this.panel) {
-      this.panel.reveal(vscode.ViewColumn.Bottom, true);
+      this.panel.reveal(vscode.ViewColumn.Two, true);
       return;
     }
 
     this.panel = vscode.window.createWebviewPanel(
       "relicSreChat",
       "Relic SRE Chat",
-      { viewColumn: vscode.ViewColumn.Bottom, preserveFocus: true },
+      { viewColumn: vscode.ViewColumn.Two, preserveFocus: true },
       { retainContextWhenHidden: true, enableScripts: true }
     );
 

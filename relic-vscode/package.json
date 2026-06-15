@@ -1,7 +1,7 @@
 {
   "name": "relic-vscode",
   "version": "0.1.0",
-  "description": "Relic SRE Agent — Code-Aware Observability in VS Code",
+  "description": "Relic SRE Agent - Code-Aware Observability in VS Code",
   "displayName": "Relic SRE Agent",
   "publisher": "leftshiftsre",
   "license": "MIT",
@@ -16,7 +16,8 @@
     "onCommand:relic.parseRepo",
     "onCommand:relic.riskScore",
     "onCommand:relic.openChat",
-    "onCommand:relic.impactMap"
+    "onCommand:relic.impactMap",
+    "workspaceContains:**/*.py"
   ],
   "contributes": {
     "commands": [
@@ -81,20 +82,19 @@
         }
       }
     },
-    "viewsContainers": {
-      "activitybar": [
+    "menus": {
+      "commandPalette": [
         {
-          "id": "relic-sidebar",
-          "title": "Relic",
-          "icon": "media/icon.svg"
-        }
-      ]
-    },
-    "views": {
-      "relic-sidebar": [
+          "command": "relic.parseRepo",
+          "when": "workspaceContains:.py"
+        },
         {
-          "id": "relic.impact",
-          "name": "Impact Map"
+          "command": "relic.riskScore",
+          "when": "workspaceContains:.py"
+        },
+        {
+          "command": "relic.openChat",
+          "when": "workspaceContains:.py"
         }
       ]
     }
@@ -104,13 +104,10 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch"
   },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "vscode": "^1.1.37"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.90.0",
-    "typescript": "^5.4.0"
+    "@types/node": "^20.17.6",
+    "@types/vscode": "^1.95.0",
+    "typescript": "^5.4.5"
   }
 }

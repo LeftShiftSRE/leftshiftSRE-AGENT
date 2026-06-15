@@ -10,7 +10,7 @@ from mcp.types import TextContent
 from relic.graph import CtxGraph
 from relic.parser import CtxParser
 from relic.risk import RiskScorer, Incident
-from relic.splunk_client import SplunkClient
+from relic.splunk_client import SplunkMCPClient
 from relic.spl_query_gen import SPLQueryGenerator
 from relic.otel_mapper import OTelMapper
 
@@ -33,14 +33,14 @@ class RelicMCPServer:
 
         self.graph: CtxGraph | None = None
         self.risk_scorer: RiskScorer | None = None
-        self.splunk_client = SplunkClient(
-            url=splunk_url,
+        self.splunk_client = SplunkMCPClient(
+            mcp_url=splunk_url,
             token=splunk_token,
             use_mock=use_mock,
             mock_dir=self.mock_dir,
         )
         self.otel_mapper = OTelMapper(self.mock_dir / "otel_mapping.yaml")
-        self.spl_query_gen = SPLQueryGenerator()
+        self.spl_query_gen = SPLQueryGenerator(splunk_client=self.splunk_client)
 
         if ctx_path and Path(ctx_path).exists():
             self.graph = CtxGraph.load(ctx_path)
@@ -162,13 +162,20 @@ class RelicMCPServer:
 
         suggestions = self.spl_query_gen.generate_suggestions(intent)
 
-        return {
+        response = {
             "intent": intent.intent,
             "spl_query": spl_query,
             "results": results,
             "code_mappings": code_mappings,
             "suggestions": suggestions,
         }
+
+        if intent.explanation:
+            response["explanation"] = intent.explanation
+        if intent.source:
+            response["spl_source"] = intent.source
+
+        return response
 
     def handle_map_metric_to_code(self, service: str, operation: str) -> dict:
         node_id = self.otel_mapper.lookup(service, operation)
@@ -197,13 +204,106 @@ class RelicMCPServer:
         incidents = self.splunk_client.get_incidents_for_node(node_id)
         return {"node_id": node_id, "incidents": incidents}
 
+    def handle_ai_spl_generate(self, query: str, namespace: str = "default") -> dict:
+        result = self.splunk_client.ai_generate_spl(query, namespace)
+        return result
+
+    def handle_ai_spl_explain(self, spl: str) -> dict:
+        result = self.splunk_client.ai_explain_spl(spl)
+        return result
+
+    def handle_forecast_metric(self, metric_name: str, service: str, forecast_horizon: str = "1h", confidence_level: float = 0.95) -> dict:
+        result = self.splunk_client.forecast_metric(metric_name, service, forecast_horizon, confidence_level)
+        return result
+
+    def handle_investigate_incident(self, incident_id: str) -> dict:
+        result = self.splunk_client.investigate_incident(incident_id)
+        if self.graph and isinstance(result, dict) and "blast_radius" in result:
+            br = result["blast_radius"]
+            if isinstance(br, dict) and "downstream_affected" in br:
+                for entry in br.get("downstream_affected", []):
+                    nid = entry.get("node_id")
+                    if nid:
+                        node = self.graph.get_node(nid)
+                        if node:
+                            entry["kind"] = node.kind
+                            entry["signature"] = node.signature
+        return result
+
+    def handle_get_dashboard_data(self) -> dict:
+        services = self.otel_mapper.all_services()
+        service_health = {}
+        for svc in services:
+            metrics = self.splunk_client.get_service_metrics(svc)
+            if metrics:
+                service_health[svc] = metrics
+
+        all_incidents = self.splunk_client.get_all_incidents()
+
+        incident_timeline = []
+        for inc in all_incidents:
+            incident_timeline.append({
+                "id": inc.get("id", ""),
+                "service": inc.get("service", ""),
+                "severity": inc.get("severity", ""),
+                "date": inc.get("date", ""),
+                "summary": inc.get("summary", ""),
+                "type": inc.get("type", ""),
+            })
+
+        dependency_graph = {"nodes": [], "edges": []}
+        if self.graph:
+            seen_nodes = set()
+            for svc in services:
+                node_ids = self.otel_mapper.service_to_node_ids(svc)
+                for nid in node_ids:
+                    if nid not in seen_nodes:
+                        seen_nodes.add(nid)
+                        node = self.graph.get_node(nid)
+                        if node:
+                            dependency_graph["nodes"].append({
+                                "id": node.id,
+                                "name": node.name,
+                                "kind": node.kind,
+                                "path": node.path,
+                            })
+                    edges = self.graph.get_edges(nid, direction="downstream", edge_type="calls")
+                    for e in edges:
+                        dependency_graph["edges"].append({
+                            "from": e.from_node,
+                            "to": e.to_node,
+                            "type": e.edge_type,
+                        })
+
+        risk_summary = None
+        if self.risk_scorer and self.graph:
+            try:
+                all_functions = [n.id for n in self.graph.nodes.values() if n.kind in ("function", "method")]
+                sample = all_functions[:5]
+                risk_result = self.risk_scorer.score([self.graph.nodes[nid].path for nid in sample if nid in self.graph.nodes])
+                risk_summary = {
+                    "overall_score": risk_result.overall_score,
+                    "level": risk_result.level,
+                    "node_count": len(risk_result.node_scores),
+                }
+            except Exception:
+                risk_summary = None
+
+        return {
+            "services": services,
+            "service_health": service_health,
+            "incident_timeline": incident_timeline,
+            "dependency_graph": dependency_graph,
+            "risk_summary": risk_summary,
+        }
+
 
 _server_instance: RelicMCPServer | None = None
 
 
 @app.list_tools()
 async def list_tools():
-    from mcp.types import Tool, ToolInputSchema
+    from mcp.types import Tool
 
     return [
         Tool(
@@ -269,7 +369,7 @@ async def list_tools():
         ),
         Tool(
             name="sre_chat_query",
-            description="Process natural language SRE question, generate SPL, return results with code mappings",
+            description="Process natural language SRE question — uses Splunk AI Assistant to generate SPL when available, with regex fallback",
             inputSchema={
                 "type": "object",
                 "properties": {"message": {"type": "string"}},
@@ -294,6 +394,57 @@ async def list_tools():
                 "type": "object",
                 "properties": {"node_id": {"type": "string"}},
                 "required": ["node_id"],
+            },
+        ),
+        Tool(
+            name="ai_spl_generate",
+            description="Use Splunk AI Assistant to generate an SPL query from natural language — requires Splunk MCP Server with AI Assistant",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "Natural language SRE question"},
+                    "namespace": {"type": "string", "description": "Splunk namespace (default: 'default')"}},
+                "required": ["query"],
+            },
+        ),
+        Tool(
+            name="ai_spl_explain",
+            description="Use Splunk AI Assistant to explain an SPL query — requires Splunk MCP Server with AI Assistant",
+            inputSchema={
+                "type": "object",
+                "properties": {"spl": {"type": "string", "description": "SPL query to explain"}},
+                "required": ["spl"],
+            },
+        ),
+        Tool(
+            name="forecast_metric",
+            description="Forecast a metric using Splunk AI Toolkit / Cisco Deep Time Series Model — includes confidence intervals and anomaly detection",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "metric_name": {"type": "string", "description": "Metric to forecast (e.g. p99_latency_ms, error_rate)"},
+                    "service": {"type": "string", "description": "Service name"},
+                    "forecast_horizon": {"type": "string", "description": "Forecast window (e.g. '1h', '24h', '7d')"},
+                    "confidence_level": {"type": "number", "description": "Confidence level (0.0-1.0, default: 0.95)"}},
+                "required": ["metric_name", "service"],
+            },
+        ),
+        Tool(
+            name="investigate_incident",
+            description="Agentic incident investigation — chains multiple Splunk tools: fetches incident, service health, related incidents, blast radius, and suggests remediation",
+            inputSchema={
+                "type": "object",
+                "properties": {"incident_id": {"type": "string", "description": "Incident ID (e.g. INC-1029)"}},
+                "required": ["incident_id"],
+            },
+        ),
+        Tool(
+            name="get_dashboard_data",
+            description="Get all dashboard data: service health grid, incident timeline, dependency graph, risk summary — powers the observability dashboard webview",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": [],
             },
         ),
     ]
@@ -338,6 +489,24 @@ async def call_tool(name: str, arguments: Any):
             )
         elif name == "get_incident_history":
             result = _server_instance.handle_get_incident_history(arguments.get("node_id", ""))
+        elif name == "ai_spl_generate":
+            result = _server_instance.handle_ai_spl_generate(
+                arguments.get("query", ""),
+                arguments.get("namespace", "default"),
+            )
+        elif name == "ai_spl_explain":
+            result = _server_instance.handle_ai_spl_explain(arguments.get("spl", ""))
+        elif name == "forecast_metric":
+            result = _server_instance.handle_forecast_metric(
+                arguments.get("metric_name", ""),
+                arguments.get("service", ""),
+                arguments.get("forecast_horizon", "1h"),
+                arguments.get("confidence_level", 0.95),
+            )
+        elif name == "investigate_incident":
+            result = _server_instance.handle_investigate_incident(arguments.get("incident_id", ""))
+        elif name == "get_dashboard_data":
+            result = _server_instance.handle_get_dashboard_data()
         else:
             result = {"error": f"Unknown tool: {name}"}
 
@@ -347,13 +516,15 @@ async def call_tool(name: str, arguments: Any):
         yield TextContent(type="text", text=json.dumps({"error": str(e)}))
 
 
-def init_server(repo_path: str, ctx_path: str | None = None, use_mock: bool = True, mock_dir: str | None = None):
+def init_server(repo_path: str, ctx_path: str | None = None, use_mock: bool = True, mock_dir: str | None = None, splunk_url: str = "http://localhost:8089", splunk_token: str = ""):
     global _server_instance
     _server_instance = RelicMCPServer(
         repo_path=repo_path,
         ctx_path=ctx_path,
         use_mock=use_mock,
         mock_dir=mock_dir,
+        splunk_url=splunk_url,
+        splunk_token=splunk_token,
     )
     return _server_instance
 

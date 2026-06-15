@@ -20,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
   chatProvider = new ChatProvider(mcpClient, context);
 
   statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
-  statusBarItem.text = "$(heart) Relic: Initializing...";
+  statusBarItem.text = "Relic: Initializing...";
   statusBarItem.tooltip = "Relic SRE Agent";
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
@@ -62,11 +62,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   await mcpClient.start();
 
-  const summary = await mcpClient.getContextSummary();
+  const summary = await mcpClient.getContextSummary() as { files?: number } | null;
   if (summary) {
-    statusBarItem.text = `$(heart) Relic: ${summary.files || 0} files indexed`;
+    statusBarItem.text = `Relic: ${summary.files || 0} files indexed`;
   } else {
-    statusBarItem.text = "$(warning) Relic: No .ctx found — run 'Parse Repository'";
+    statusBarItem.text = "Relic: No .ctx found";
   }
 }
 

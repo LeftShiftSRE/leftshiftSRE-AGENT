@@ -7,6 +7,7 @@ interface ImpactNode {
   path: string;
   score?: number;
   level?: string;
+  reasons?: string[];
   incidents?: { id: string; severity: string; summary: string }[];
   dependents?: { node_id: string; name: string; path: string }[];
   callers?: { node_id: string; name: string; path: string }[];
@@ -57,10 +58,8 @@ export class ImpactProvider implements vscode.TreeDataProvider<TreeItem> {
 
       return this.impactData.map((node) => {
         const icon = this.getSeverityIcon(node.level || "low");
-        const item = new TreeItem(
-          `${icon} ${node.name}() — Risk ${node.score || 0}/100`,
-          vscode.TreeItemCollapsibleState.Expanded
-        );
+        const label = icon + " " + node.name + "() -- Risk " + (node.score || 0) + "/100";
+        const item = new TreeItem(label, vscode.TreeItemCollapsibleState.Expanded);
         item.contextValue = "impactNode";
         item.resourceUri = vscode.Uri.file(node.path);
         item.customId = node.nodeId;
@@ -75,94 +74,59 @@ export class ImpactProvider implements vscode.TreeDataProvider<TreeItem> {
       const children: TreeItem[] = [];
 
       if (node.callers?.length) {
-        children.push(
-          new TreeItem(
-            "⬆ Upstream Callers",
-            vscode.TreeItemCollapsibleState.Collapsed
-          )
-        );
+        children.push(new TreeItem("Upstream Callers", vscode.TreeItemCollapsibleState.Collapsed));
       }
-
       if (node.dependents?.length) {
-        children.push(
-          new TreeItem(
-            "⬇ Downstream Dependents",
-            vscode.TreeItemCollapsibleState.Collapsed
-          )
-        );
+        children.push(new TreeItem("Downstream Dependents", vscode.TreeItemCollapsibleState.Collapsed));
       }
-
       if (node.incidents?.length) {
-        children.push(
-          new TreeItem(
-            `⚡ Past Incidents (${node.incidents.length})`,
-            vscode.TreeItemCollapsibleState.Collapsed
-          )
-        );
+        children.push(new TreeItem("Past Incidents (" + node.incidents.length + ")", vscode.TreeItemCollapsibleState.Collapsed));
       }
-
       if (node.reasons?.length) {
-        children.push(
-          new TreeItem(
-            "📋 Reasons",
-            vscode.TreeItemCollapsibleState.Collapsed
-          )
-        );
+        children.push(new TreeItem("Reasons", vscode.TreeItemCollapsibleState.Collapsed));
       }
 
       return children;
     }
 
-    const parentId = this.findParentId(element.label || "");
+    const label = String(element.label || "");
+    const parentId = this.findParentId(label);
     if (!parentId) return [];
 
     const parentNode = this.impactData.find((n) => n.nodeId === parentId);
     if (!parentNode) return [];
 
-    const label = (element.label || "").toString();
-
-    if (label.startsWith("⬆ Upstream")) {
+    if (label.startsWith("Upstream")) {
       return (parentNode.callers || []).map((c) => {
-        const item = new TreeItem(`${c.name}()  [${c.path}]`, vscode.TreeItemCollapsibleState.None);
+        const item = new TreeItem(c.name + "()  [" + c.path + "]", vscode.TreeItemCollapsibleState.None);
         item.contextValue = "codeNode";
         item.resourceUri = vscode.Uri.file(c.path);
-        item.command = {
-          command: "vscode.open",
-          arguments: [vscode.Uri.file(c.path)],
-          title: "Open file",
-        };
+        item.command = { command: "vscode.open", arguments: [vscode.Uri.file(c.path)], title: "Open file" };
         return item;
       });
     }
 
-    if (label.startsWith("⬇ Downstream")) {
+    if (label.startsWith("Downstream")) {
       return (parentNode.dependents || []).map((d) => {
-        const item = new TreeItem(`${d.name}()  [${d.path}]`, vscode.TreeItemCollapsibleState.None);
+        const item = new TreeItem(d.name + "()  [" + d.path + "]", vscode.TreeItemCollapsibleState.None);
         item.contextValue = "codeNode";
         item.resourceUri = vscode.Uri.file(d.path);
-        item.command = {
-          command: "vscode.open",
-          arguments: [vscode.Uri.file(d.path)],
-          title: "Open file",
-        };
+        item.command = { command: "vscode.open", arguments: [vscode.Uri.file(d.path)], title: "Open file" };
         return item;
       });
     }
 
-    if (label.startsWith("⚡")) {
+    if (label.startsWith("Past Incidents")) {
       return (parentNode.incidents || []).map((inc) => {
-        const sev = inc.severity === "critical" ? "🔴" : inc.severity === "high" ? "🟠" : "🟡";
-        const item = new TreeItem(
-          `${sev} ${inc.id}: ${inc.summary.substring(0, 60)}...`,
-          vscode.TreeItemCollapsibleState.None
-        );
+        const sev = inc.severity === "critical" ? "[CRIT]" : inc.severity === "high" ? "[HIGH]" : "[MED]";
+        const item = new TreeItem(sev + " " + inc.id + ": " + inc.summary.substring(0, 60), vscode.TreeItemCollapsibleState.None);
         item.contextValue = "incident";
         return item;
       });
     }
 
-    if (label.startsWith("📋")) {
-      return (parentNode.reasons || []).map((reason) => {
+    if (label.startsWith("Reasons")) {
+      return (parentNode.reasons || []).map((reason: string) => {
         return new TreeItem(reason, vscode.TreeItemCollapsibleState.None);
       });
     }
@@ -181,14 +145,10 @@ export class ImpactProvider implements vscode.TreeDataProvider<TreeItem> {
 
   private getSeverityIcon(level: string): string {
     switch (level) {
-      case "critical":
-        return "🔴";
-      case "medium":
-        return "🟡";
-      case "low":
-        return "🟢";
-      default:
-        return "⚪";
+      case "critical": return "[CRIT]";
+      case "medium": return "[MED]";
+      case "low": return "[LOW]";
+      default: return "[---]";
     }
   }
 }
@@ -196,10 +156,7 @@ export class ImpactProvider implements vscode.TreeDataProvider<TreeItem> {
 class TreeItem extends vscode.TreeItem {
   public customId?: string;
 
-  constructor(
-    label: string,
-    collapsibleState: vscode.TreeItemCollapsibleState
-  ) {
+  constructor(label: string, collapsibleState: vscode.TreeItemCollapsibleState) {
     super(label, collapsibleState);
   }
 }

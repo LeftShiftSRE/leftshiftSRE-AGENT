@@ -1,0 +1,21 @@
+hec_tokens:
+  fast_path:
+    token_env: SPLUNK_HEC_FAST
+    ack: false
+    indexes:
+      - main
+      - apm
+      - os
+    intended_for:
+      - traces
+      - logs
+      - metrics
+  audit_path:
+    token_env: SPLUNK_HEC_AUDIT
+    ack: true
+    indexes:
+      - audit
+      - security
+    intended_for:
+      - audit_events
+      - security_events

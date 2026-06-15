@@ -1,0 +1,3 @@
+| inputlookup risk_score_summary WHERE node_id IN ($node_ids$)
+| table node_id, service, operation, risk_score, risk_level,
+        blast_radius, incidents_30d, p99_ms, owner, confidence

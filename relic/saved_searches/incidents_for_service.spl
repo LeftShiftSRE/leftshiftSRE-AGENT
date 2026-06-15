@@ -1,0 +1,3 @@
+index=incidents service="$service$" earliest=$earliest$
+| table id, severity, summary, date
+| sort -severity

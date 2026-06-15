@@ -37,7 +37,7 @@ export class RiskProvider {
     const files = modifiedFiles || this.getModifiedPythonFiles();
 
     if (files.length === 0) {
-      this.statusBar.text = "$(check) Relic: $(plus) 0/100";
+      this.statusBar.text = "Relic: 0/100 (low)";
       this.statusBar.color = "#3fb950";
       this.currentRisk = null;
       return;
@@ -47,9 +47,9 @@ export class RiskProvider {
       const result = (await this.client.getRiskScore(files)) as RiskResult;
       this.currentRisk = result;
       this.updateStatusBar(result);
-      this.applyDecorations(result);
+      await this.applyDecorations(result);
     } catch (err) {
-      this.statusBar.text = "$(warning) Relic: Error";
+      this.statusBar.text = "Relic: Error";
       this.statusBar.color = "#f85149";
     }
   }
@@ -75,11 +75,11 @@ export class RiskProvider {
     const score = result.overall_score;
     const level = result.level;
 
-    const icons: Record<string, string> = {
-      low: "$(check)",
-      medium: "$(warning)",
-      critical: "$(error)",
-      none: "$(plus)",
+    const prefixes: Record<string, string> = {
+      low: "[OK]",
+      medium: "[WARN]",
+      critical: "[CRIT]",
+      none: "[---]",
     };
 
     const colors: Record<string, string> = {
@@ -89,12 +89,12 @@ export class RiskProvider {
       none: "#3fb950",
     };
 
-    this.statusBar.text = `${icons[level] || "$(question)"} Relic: ${score}/100`;
+    this.statusBar.text = `${prefixes[level] || "[?]"} Relic: ${score}/100`;
     this.statusBar.color = colors[level] || "#cccccc";
     this.statusBar.tooltip = `${level.toUpperCase()} risk\n\nTop reason: ${result.node_scores[0]?.reasons[0] || "none"}\n\nClick to view impact map`;
   }
 
-  private applyDecorations(result: RiskResult): void {
+  private async applyDecorations(result: RiskResult): Promise<void> {
     for (const decoration of this.decorations.values()) {
       decoration.dispose();
     }
@@ -108,43 +108,31 @@ export class RiskProvider {
         const docPath = doc.uri.fsPath.replace(/\\/g, "/");
 
         try {
-          const nodeInfo = await this.client.getNode(nodeScore.node_id) as {
+          const nodeInfo = (await this.client.getNode(nodeScore.node_id)) as {
             path: string;
             start_line: number;
             end_line: number;
-          };
+          } | null;
 
           if (!nodeInfo || !nodeInfo.path) continue;
           if (!docPath.endsWith(nodeInfo.path)) continue;
 
           const startLine = Math.max(0, (nodeInfo.start_line || 1) - 1);
-          const endLine = Math.min(doc.lineCount, nodeInfo.end_line || startLine + 1);
 
-          const color =
-            nodeScore.level === "critical"
-              ? new vscode.Range(startLine, 0, startLine, 0)
-              : nodeScore.level === "medium"
-              ? new vscode.Range(startLine, 0, startLine, 0)
-              : null;
+          if (nodeScore.level === "critical" || nodeScore.level === "medium") {
+            const bgColor = nodeScore.level === "critical"
+              ? "rgba(248, 81, 73, 0.1)"
+              : "rgba(210, 153, 34, 0.1)";
+            const textColor = nodeScore.level === "critical" ? "#f85149" : "#d29922";
 
-          if (color) {
             const decoration = vscode.window.createTextEditorDecorationType({
-              isWholeLine: nodeScore.level === "critical",
-              gutterIconPath: {
-                light: vscode.Uri.file(""),
-                dark: vscode.Uri.file(""),
-              },
-              overviewRulerColor:
-                nodeScore.level === "critical" ? "#f85149" : "#d29922",
+              isWholeLine: true,
+              overviewRulerColor: textColor,
               overviewRulerLane: vscode.OverviewRulerLane.Right,
-              backgroundColor:
-                nodeScore.level === "critical"
-                  ? "rgba(248, 81, 73, 0.1)"
-                  : "rgba(210, 153, 34, 0.1)",
+              backgroundColor: bgColor,
               after: {
-                contentText: ` ⚠ Risk ${nodeScore.score}/100`,
-                color:
-                  nodeScore.level === "critical" ? "#f85149" : "#d29922",
+                contentText: " Risk " + nodeScore.score + "/100",
+                color: textColor,
                 fontWeight: "bold",
               },
             });
@@ -153,7 +141,7 @@ export class RiskProvider {
               new vscode.Range(startLine, 0, startLine, 0),
             ]);
 
-            this.decorations.set(`${editor.document.uri.fsPath}-${nodeScore.node_id}`, decoration);
+            this.decorations.set(editor.document.uri.fsPath + "-" + nodeScore.node_id, decoration);
           }
         } catch {
           // Node not found in current document

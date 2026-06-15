@@ -1,0 +1,4 @@
+index=apm metric=latency_p99_ms service="$service$" earliest=-24h
+| stats latest(value) as p99 by service, operation
+| sort -p99
+| head 20

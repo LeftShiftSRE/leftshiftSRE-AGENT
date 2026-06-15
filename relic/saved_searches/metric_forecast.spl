@@ -1,0 +1,3 @@
+index=apm metric="$metric$" earliest=-7d service="$service$"
+| timechart span=5m avg(value) as metric_value
+| predict metric_value algorithm=LLP5 future_timespan=12 confidence=95
