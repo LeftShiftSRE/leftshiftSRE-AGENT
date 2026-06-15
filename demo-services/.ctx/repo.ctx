@@ -1,0 +1,777 @@
+metadata:
+  repo_id: demo-services
+  generated_at: '2026-06-14T19:50:11Z'
+  language: python
+  version: '1.0'
+  parser: tree-sitter-python@0.25.0
+  parse_time_seconds: 0.005
+nodes:
+- id: n_f_main_85be52de8ffc
+  kind: file
+  name: main.py
+  path: gateway\main.py
+  span:
+    start_line: 1
+    end_line: 55
+- id: n_i_fastapi_15a269ec7b19
+  kind: import
+  name: fastapi
+  path: gateway\main.py
+  span:
+    start_line: 1
+    end_line: 1
+- id: n_i_pydantic_00964be2249d
+  kind: import
+  name: pydantic
+  path: gateway\main.py
+  span:
+    start_line: 2
+    end_line: 2
+- id: n_i_time_ab44cebcdc6d
+  kind: import
+  name: time
+  path: gateway\main.py
+  span:
+    start_line: 3
+    end_line: 3
+- id: n_i_uuid_8c4f37e9c1a8
+  kind: import
+  name: uuid
+  path: gateway\main.py
+  span:
+    start_line: 4
+    end_line: 4
+- id: n_i_httpx_e510dea05b51
+  kind: import
+  name: httpx
+  path: gateway\main.py
+  span:
+    start_line: 5
+    end_line: 5
+- id: n_c_orderrequest_2cb61f2dfd37
+  kind: class
+  name: OrderRequest
+  path: gateway\main.py
+  span:
+    start_line: 9
+    end_line: 12
+  parent: n_f_main_85be52de8ffc
+- id: n_c_orderresponse_c02916cc3d31
+  kind: class
+  name: OrderResponse
+  path: gateway\main.py
+  span:
+    start_line: 14
+    end_line: 17
+  parent: n_f_main_85be52de8ffc
+- id: n_f_createorder_a7893cc50634
+  kind: function
+  name: create_order
+  path: gateway\main.py
+  span:
+    start_line: 20
+    end_line: 47
+  signature: 'async def create_order(req: OrderRequest):'
+  parent: n_f_main_85be52de8ffc
+- id: n_f_health_fd6ec7cdffb2
+  kind: function
+  name: health
+  path: gateway\main.py
+  span:
+    start_line: 50
+    end_line: 51
+  signature: 'async def health():'
+  parent: n_f_main_85be52de8ffc
+- id: n_f_root_57d61cc7dfd6
+  kind: function
+  name: root
+  path: gateway\main.py
+  span:
+    start_line: 54
+    end_line: 55
+  signature: 'async def root():'
+  parent: n_f_main_85be52de8ffc
+- id: n_f_main_1b21f121a4d4
+  kind: file
+  name: main.py
+  path: inventory_service\main.py
+  span:
+    start_line: 1
+    end_line: 32
+- id: n_i_fastapi_4c62500e1b6c
+  kind: import
+  name: fastapi
+  path: inventory_service\main.py
+  span:
+    start_line: 1
+    end_line: 1
+- id: n_i_pydantic_25adfc67983b
+  kind: import
+  name: pydantic
+  path: inventory_service\main.py
+  span:
+    start_line: 2
+    end_line: 2
+- id: n_i_asyncio_7fa7cdba71fd
+  kind: import
+  name: asyncio
+  path: inventory_service\main.py
+  span:
+    start_line: 3
+    end_line: 3
+- id: n_i_random_4d7f2e82b7b9
+  kind: import
+  name: random
+  path: inventory_service\main.py
+  span:
+    start_line: 4
+    end_line: 4
+- id: n_c_reserverequest_96955d9e3b58
+  kind: class
+  name: ReserveRequest
+  path: inventory_service\main.py
+  span:
+    start_line: 8
+    end_line: 10
+  parent: n_f_main_1b21f121a4d4
+- id: n_c_reserveresponse_61ab9614d77d
+  kind: class
+  name: ReserveResponse
+  path: inventory_service\main.py
+  span:
+    start_line: 12
+    end_line: 15
+  parent: n_f_main_1b21f121a4d4
+- id: n_f_reserve_1a010260730d
+  kind: function
+  name: reserve
+  path: inventory_service\main.py
+  span:
+    start_line: 18
+    end_line: 24
+  signature: 'async def reserve(req: ReserveRequest):'
+  parent: n_f_main_1b21f121a4d4
+- id: n_f_health_d2f11df479ef
+  kind: function
+  name: health
+  path: inventory_service\main.py
+  span:
+    start_line: 27
+    end_line: 28
+  signature: 'async def health():'
+  parent: n_f_main_1b21f121a4d4
+- id: n_f_root_9dee4abbd135
+  kind: function
+  name: root
+  path: inventory_service\main.py
+  span:
+    start_line: 31
+    end_line: 32
+  signature: 'async def root():'
+  parent: n_f_main_1b21f121a4d4
+- id: n_f_main_cc6e1b71b3ed
+  kind: file
+  name: main.py
+  path: order_service\main.py
+  span:
+    start_line: 1
+    end_line: 60
+- id: n_i_fastapi_f402d1858cee
+  kind: import
+  name: fastapi
+  path: order_service\main.py
+  span:
+    start_line: 1
+    end_line: 1
+- id: n_i_pydantic_cb5ac3ebe8fe
+  kind: import
+  name: pydantic
+  path: order_service\main.py
+  span:
+    start_line: 2
+    end_line: 2
+- id: n_i_httpx_9277ae4c9687
+  kind: import
+  name: httpx
+  path: order_service\main.py
+  span:
+    start_line: 3
+    end_line: 3
+- id: n_i_time_d785ccad0829
+  kind: import
+  name: time
+  path: order_service\main.py
+  span:
+    start_line: 4
+    end_line: 4
+- id: n_c_createorderrequest_3627011f7798
+  kind: class
+  name: CreateOrderRequest
+  path: order_service\main.py
+  span:
+    start_line: 8
+    end_line: 12
+  parent: n_f_main_cc6e1b71b3ed
+- id: n_c_orderresult_f650b3c4d792
+  kind: class
+  name: OrderResult
+  path: order_service\main.py
+  span:
+    start_line: 14
+    end_line: 18
+  parent: n_f_main_cc6e1b71b3ed
+- id: n_f_createorder_5dcec3cf1563
+  kind: function
+  name: create_order
+  path: order_service\main.py
+  span:
+    start_line: 21
+    end_line: 52
+  signature: 'async def create_order(req: CreateOrderRequest):'
+  parent: n_f_main_cc6e1b71b3ed
+- id: n_f_health_512b8c16be0d
+  kind: function
+  name: health
+  path: order_service\main.py
+  span:
+    start_line: 55
+    end_line: 56
+  signature: 'async def health():'
+  parent: n_f_main_cc6e1b71b3ed
+- id: n_f_root_660b14e683d3
+  kind: function
+  name: root
+  path: order_service\main.py
+  span:
+    start_line: 59
+    end_line: 60
+  signature: 'async def root():'
+  parent: n_f_main_cc6e1b71b3ed
+- id: n_f_main_f49c4f5ba489
+  kind: file
+  name: main.py
+  path: payment_service\main.py
+  span:
+    start_line: 1
+    end_line: 99
+- id: n_i_fastapi_21b554aeebf7
+  kind: import
+  name: fastapi
+  path: payment_service\main.py
+  span:
+    start_line: 1
+    end_line: 1
+- id: n_i_pydantic_d6cba18cf0b1
+  kind: import
+  name: pydantic
+  path: payment_service\main.py
+  span:
+    start_line: 2
+    end_line: 2
+- id: n_i_time_9ec7affda713
+  kind: import
+  name: time
+  path: payment_service\main.py
+  span:
+    start_line: 3
+    end_line: 3
+- id: n_i_random_43488bf824f6
+  kind: import
+  name: random
+  path: payment_service\main.py
+  span:
+    start_line: 4
+    end_line: 4
+- id: n_i_sqlite3_e8c0e5b425bf
+  kind: import
+  name: sqlite3
+  path: payment_service\main.py
+  span:
+    start_line: 5
+    end_line: 5
+- id: n_c_chargerequest_c3e94b71e44a
+  kind: class
+  name: ChargeRequest
+  path: payment_service\main.py
+  span:
+    start_line: 11
+    end_line: 14
+  parent: n_f_main_f49c4f5ba489
+- id: n_c_chargeresponse_7bd5aae93265
+  kind: class
+  name: ChargeResponse
+  path: payment_service\main.py
+  span:
+    start_line: 16
+    end_line: 20
+  parent: n_f_main_f49c4f5ba489
+- id: n_f_getdbconnection_dfb40643f3d5
+  kind: function
+  name: get_db_connection
+  path: payment_service\main.py
+  span:
+    start_line: 22
+    end_line: 25
+  signature: 'def get_db_connection():'
+  parent: n_f_main_f49c4f5ba489
+- id: n_f_initdb_ecdc00bec6ee
+  kind: function
+  name: init_db
+  path: payment_service\main.py
+  span:
+    start_line: 27
+    end_line: 49
+  signature: 'def init_db():'
+  parent: n_f_main_f49c4f5ba489
+- id: n_f_charge_f656d2fd152b
+  kind: function
+  name: charge
+  path: payment_service\main.py
+  span:
+    start_line: 54
+    end_line: 91
+  signature: 'async def charge(req: ChargeRequest):'
+  parent: n_f_main_f49c4f5ba489
+- id: n_f_health_ff4362e65646
+  kind: function
+  name: health
+  path: payment_service\main.py
+  span:
+    start_line: 94
+    end_line: 95
+  signature: 'async def health():'
+  parent: n_f_main_f49c4f5ba489
+- id: n_f_root_557dd2c393ea
+  kind: function
+  name: root
+  path: payment_service\main.py
+  span:
+    start_line: 98
+    end_line: 99
+  signature: 'async def root():'
+  parent: n_f_main_f49c4f5ba489
+edges:
+- from: n_f_main_85be52de8ffc
+  to: n_i_fastapi_15a269ec7b19
+  type: imports
+- from: n_f_main_85be52de8ffc
+  to: n_i_pydantic_00964be2249d
+  type: imports
+- from: n_f_main_85be52de8ffc
+  to: n_i_time_ab44cebcdc6d
+  type: imports
+- from: n_f_main_85be52de8ffc
+  to: n_i_uuid_8c4f37e9c1a8
+  type: imports
+- from: n_f_main_85be52de8ffc
+  to: n_i_httpx_e510dea05b51
+  type: imports
+- from: n_f_main_85be52de8ffc
+  to: n_c_orderrequest_2cb61f2dfd37
+  type: contains
+- from: n_f_main_85be52de8ffc
+  to: n_c_orderresponse_c02916cc3d31
+  type: contains
+- from: n_f_main_85be52de8ffc
+  to: n_f_createorder_a7893cc50634
+  type: contains
+- from: n_f_createorder_a7893cc50634
+  to: n_f_time_9d268edfa2a2
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_uuid4_d54ae41e4feb
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_asyncclient_7af1ce6b222a
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_post_455eba876f73
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_raiseforstatus_825d9572c4a1
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_json_87ae1f8f0649
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_httpexception_570d527d145a
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_orderresponse_4b05fb031c83
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_sum_b90233425aca
+  type: calls
+- from: n_f_createorder_a7893cc50634
+  to: n_f_get_885953a0b361
+  type: calls
+- from: n_f_main_85be52de8ffc
+  to: n_f_health_fd6ec7cdffb2
+  type: contains
+- from: n_f_main_85be52de8ffc
+  to: n_f_root_57d61cc7dfd6
+  type: contains
+- from: n_f_main_cc6e1b71b3ed
+  to: n_i_fastapi_f402d1858cee
+  type: imports
+- from: n_f_main_cc6e1b71b3ed
+  to: n_i_pydantic_cb5ac3ebe8fe
+  type: imports
+- from: n_f_main_cc6e1b71b3ed
+  to: n_i_httpx_9277ae4c9687
+  type: imports
+- from: n_f_main_cc6e1b71b3ed
+  to: n_i_time_d785ccad0829
+  type: imports
+- from: n_f_main_cc6e1b71b3ed
+  to: n_c_createorderrequest_3627011f7798
+  type: contains
+- from: n_f_main_cc6e1b71b3ed
+  to: n_c_orderresult_f650b3c4d792
+  type: contains
+- from: n_f_main_cc6e1b71b3ed
+  to: n_f_createorder_5dcec3cf1563
+  type: contains
+- from: n_f_createorder_5dcec3cf1563
+  to: n_f_asyncclient_767a563be0b6
+  type: calls
+- from: n_f_createorder_5dcec3cf1563
+  to: n_f_post_1b470da00080
+  type: calls
+- from: n_f_createorder_5dcec3cf1563
+  to: n_f_raiseforstatus_7c2747a4ce12
+  type: calls
+- from: n_f_createorder_5dcec3cf1563
+  to: n_f_orderresult_846a05d30bd8
+  type: calls
+- from: n_f_main_cc6e1b71b3ed
+  to: n_f_health_512b8c16be0d
+  type: contains
+- from: n_f_main_cc6e1b71b3ed
+  to: n_f_root_660b14e683d3
+  type: contains
+- from: n_f_main_f49c4f5ba489
+  to: n_i_fastapi_21b554aeebf7
+  type: imports
+- from: n_f_main_f49c4f5ba489
+  to: n_i_pydantic_d6cba18cf0b1
+  type: imports
+- from: n_f_main_f49c4f5ba489
+  to: n_i_time_9ec7affda713
+  type: imports
+- from: n_f_main_f49c4f5ba489
+  to: n_i_random_43488bf824f6
+  type: imports
+- from: n_f_main_f49c4f5ba489
+  to: n_i_sqlite3_e8c0e5b425bf
+  type: imports
+- from: n_f_main_f49c4f5ba489
+  to: n_c_chargerequest_c3e94b71e44a
+  type: contains
+- from: n_f_main_f49c4f5ba489
+  to: n_c_chargeresponse_7bd5aae93265
+  type: contains
+- from: n_f_main_f49c4f5ba489
+  to: n_f_getdbconnection_dfb40643f3d5
+  type: contains
+- from: n_f_getdbconnection_dfb40643f3d5
+  to: n_f_connect_e6b104e60018
+  type: calls
+- from: n_f_main_f49c4f5ba489
+  to: n_f_initdb_ecdc00bec6ee
+  type: contains
+- from: n_f_initdb_ecdc00bec6ee
+  to: n_f_getdbconnection_dfb40643f3d5
+  type: calls
+- from: n_f_initdb_ecdc00bec6ee
+  to: n_f_execute_aac254ed0b1b
+  type: calls
+- from: n_f_initdb_ecdc00bec6ee
+  to: n_f_range_3d293f64d36d
+  type: calls
+- from: n_f_initdb_ecdc00bec6ee
+  to: n_f_uniform_331f21dd3474
+  type: calls
+- from: n_f_initdb_ecdc00bec6ee
+  to: n_f_commit_f9f57e8c2c3a
+  type: calls
+- from: n_f_initdb_ecdc00bec6ee
+  to: n_f_close_d69610a330cc
+  type: calls
+- from: n_f_main_f49c4f5ba489
+  to: n_f_charge_f656d2fd152b
+  type: contains
+- from: n_f_charge_f656d2fd152b
+  to: n_f_time_b40f0525d6c6
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_int_3af02b01b72a
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_getdbconnection_dfb40643f3d5
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_cursor_b3c74e20dd49
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_execute_aac254ed0b1b
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_fetchone_e03b35345e56
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_close_d69610a330cc
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_httpexception_e28a037e99a0
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_fetchall_19b99b8386bf
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_sum_6712bdace106
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_float_abd2e93dc106
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_sleep_6387b97860ae
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_uniform_331f21dd3474
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_commit_f9f57e8c2c3a
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_chargeresponse_1e8ae078d7e6
+  type: calls
+- from: n_f_charge_f656d2fd152b
+  to: n_f_round_a8c3ace82a2c
+  type: calls
+- from: n_f_main_f49c4f5ba489
+  to: n_f_health_ff4362e65646
+  type: contains
+- from: n_f_main_f49c4f5ba489
+  to: n_f_root_557dd2c393ea
+  type: contains
+- from: n_f_main_1b21f121a4d4
+  to: n_i_fastapi_4c62500e1b6c
+  type: imports
+- from: n_f_main_1b21f121a4d4
+  to: n_i_pydantic_25adfc67983b
+  type: imports
+- from: n_f_main_1b21f121a4d4
+  to: n_i_asyncio_7fa7cdba71fd
+  type: imports
+- from: n_f_main_1b21f121a4d4
+  to: n_i_random_4d7f2e82b7b9
+  type: imports
+- from: n_f_main_1b21f121a4d4
+  to: n_c_reserverequest_96955d9e3b58
+  type: contains
+- from: n_f_main_1b21f121a4d4
+  to: n_c_reserveresponse_61ab9614d77d
+  type: contains
+- from: n_f_main_1b21f121a4d4
+  to: n_f_reserve_1a010260730d
+  type: contains
+- from: n_f_reserve_1a010260730d
+  to: n_f_asynciosleep_1c5339b40552
+  type: calls
+- from: n_f_reserve_1a010260730d
+  to: n_f_uniform_312ae126a2ae
+  type: calls
+- from: n_f_reserve_1a010260730d
+  to: n_f_reserveresponse_b94e0bb5f237
+  type: calls
+- from: n_f_reserve_1a010260730d
+  to: n_f_len_1646b80f1573
+  type: calls
+- from: n_f_reserve_1a010260730d
+  to: n_f_randint_37e478027a16
+  type: calls
+- from: n_f_main_1b21f121a4d4
+  to: n_f_health_d2f11df479ef
+  type: contains
+- from: n_f_main_1b21f121a4d4
+  to: n_f_root_9dee4abbd135
+  type: contains
+interfaces: []
+span_map:
+  n_f_main_85be52de8ffc:
+    file: gateway\main.py
+    start_line: 1
+    end_line: 55
+  n_i_fastapi_15a269ec7b19:
+    file: gateway\main.py
+    start_line: 1
+    end_line: 1
+  n_i_pydantic_00964be2249d:
+    file: gateway\main.py
+    start_line: 2
+    end_line: 2
+  n_i_time_ab44cebcdc6d:
+    file: gateway\main.py
+    start_line: 3
+    end_line: 3
+  n_i_uuid_8c4f37e9c1a8:
+    file: gateway\main.py
+    start_line: 4
+    end_line: 4
+  n_i_httpx_e510dea05b51:
+    file: gateway\main.py
+    start_line: 5
+    end_line: 5
+  n_c_orderrequest_2cb61f2dfd37:
+    file: gateway\main.py
+    start_line: 9
+    end_line: 12
+  n_c_orderresponse_c02916cc3d31:
+    file: gateway\main.py
+    start_line: 14
+    end_line: 17
+  n_f_createorder_a7893cc50634:
+    file: gateway\main.py
+    start_line: 20
+    end_line: 47
+  n_f_health_fd6ec7cdffb2:
+    file: gateway\main.py
+    start_line: 50
+    end_line: 51
+  n_f_root_57d61cc7dfd6:
+    file: gateway\main.py
+    start_line: 54
+    end_line: 55
+  n_f_main_cc6e1b71b3ed:
+    file: order_service\main.py
+    start_line: 1
+    end_line: 60
+  n_i_fastapi_f402d1858cee:
+    file: order_service\main.py
+    start_line: 1
+    end_line: 1
+  n_i_pydantic_cb5ac3ebe8fe:
+    file: order_service\main.py
+    start_line: 2
+    end_line: 2
+  n_i_httpx_9277ae4c9687:
+    file: order_service\main.py
+    start_line: 3
+    end_line: 3
+  n_i_time_d785ccad0829:
+    file: order_service\main.py
+    start_line: 4
+    end_line: 4
+  n_c_createorderrequest_3627011f7798:
+    file: order_service\main.py
+    start_line: 8
+    end_line: 12
+  n_c_orderresult_f650b3c4d792:
+    file: order_service\main.py
+    start_line: 14
+    end_line: 18
+  n_f_createorder_5dcec3cf1563:
+    file: order_service\main.py
+    start_line: 21
+    end_line: 52
+  n_f_health_512b8c16be0d:
+    file: order_service\main.py
+    start_line: 55
+    end_line: 56
+  n_f_root_660b14e683d3:
+    file: order_service\main.py
+    start_line: 59
+    end_line: 60
+  n_f_main_f49c4f5ba489:
+    file: payment_service\main.py
+    start_line: 1
+    end_line: 99
+  n_i_fastapi_21b554aeebf7:
+    file: payment_service\main.py
+    start_line: 1
+    end_line: 1
+  n_i_pydantic_d6cba18cf0b1:
+    file: payment_service\main.py
+    start_line: 2
+    end_line: 2
+  n_i_time_9ec7affda713:
+    file: payment_service\main.py
+    start_line: 3
+    end_line: 3
+  n_i_random_43488bf824f6:
+    file: payment_service\main.py
+    start_line: 4
+    end_line: 4
+  n_i_sqlite3_e8c0e5b425bf:
+    file: payment_service\main.py
+    start_line: 5
+    end_line: 5
+  n_c_chargerequest_c3e94b71e44a:
+    file: payment_service\main.py
+    start_line: 11
+    end_line: 14
+  n_c_chargeresponse_7bd5aae93265:
+    file: payment_service\main.py
+    start_line: 16
+    end_line: 20
+  n_f_getdbconnection_dfb40643f3d5:
+    file: payment_service\main.py
+    start_line: 22
+    end_line: 25
+  n_f_initdb_ecdc00bec6ee:
+    file: payment_service\main.py
+    start_line: 27
+    end_line: 49
+  n_f_charge_f656d2fd152b:
+    file: payment_service\main.py
+    start_line: 54
+    end_line: 91
+  n_f_health_ff4362e65646:
+    file: payment_service\main.py
+    start_line: 94
+    end_line: 95
+  n_f_root_557dd2c393ea:
+    file: payment_service\main.py
+    start_line: 98
+    end_line: 99
+  n_f_main_1b21f121a4d4:
+    file: inventory_service\main.py
+    start_line: 1
+    end_line: 32
+  n_i_fastapi_4c62500e1b6c:
+    file: inventory_service\main.py
+    start_line: 1
+    end_line: 1
+  n_i_pydantic_25adfc67983b:
+    file: inventory_service\main.py
+    start_line: 2
+    end_line: 2
+  n_i_asyncio_7fa7cdba71fd:
+    file: inventory_service\main.py
+    start_line: 3
+    end_line: 3
+  n_i_random_4d7f2e82b7b9:
+    file: inventory_service\main.py
+    start_line: 4
+    end_line: 4
+  n_c_reserverequest_96955d9e3b58:
+    file: inventory_service\main.py
+    start_line: 8
+    end_line: 10
+  n_c_reserveresponse_61ab9614d77d:
+    file: inventory_service\main.py
+    start_line: 12
+    end_line: 15
+  n_f_reserve_1a010260730d:
+    file: inventory_service\main.py
+    start_line: 18
+    end_line: 24
+  n_f_health_d2f11df479ef:
+    file: inventory_service\main.py
+    start_line: 27
+    end_line: 28
+  n_f_root_9dee4abbd135:
+    file: inventory_service\main.py
+    start_line: 31
+    end_line: 32

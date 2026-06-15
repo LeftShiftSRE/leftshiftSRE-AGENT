@@ -1,13 +1,12 @@
 import hashlib
 import os
-from dataclasses import dataclass, field
+import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
 import tree_sitter_python as tspython
 from tree_sitter import Language, Parser
-
-from relic.otel_mapper import OTelMapper
 
 
 @dataclass
@@ -77,7 +76,8 @@ def _make_node_id(kind: str, path: str, name: str) -> str:
     raw = f"{path}:{name}:{kind}"
     h = hashlib.sha256(raw.encode()).hexdigest()[:12]
     prefix = kind[0].lower()
-    return f"n_{prefix}_{name.lower().replace('_', '')}_{h}"
+    safe_name = name.lower().replace("_", "")
+    return f"n_{prefix}_{safe_name}_{h}"
 
 
 def _get_text(node, source: bytes) -> str:
@@ -89,8 +89,7 @@ class CtxParser:
         self.repo_path = Path(repo_path).resolve()
         self.language = language
         self._parser = Parser()
-        lang = Language(tspython.language())
-        self._parser.set_language(lang)
+        self._parser.language = Language(tspython.language())
         self._source_cache: dict[str, bytes] = {}
 
     def _load_source(self, file_path: Path) -> bytes:
@@ -107,8 +106,8 @@ class CtxParser:
 
         nodes: list[CtxNode] = []
         edges: list[CtxEdge] = []
-        interfaces: list[CtxInterface] = []
 
+        total_lines = len(source.decode("utf-8", errors="replace").splitlines())
         file_node_id = _make_node_id("file", rel_path, file_path.stem)
         file_node = CtxNode(
             id=file_node_id,
@@ -116,14 +115,14 @@ class CtxParser:
             name=file_path.name,
             path=rel_path,
             start_line=1,
-            end_line=len(source.decode("utf-8", errors="replace").splitlines()),
+            end_line=total_lines,
         )
         nodes.append(file_node)
 
         class_stack: list[CtxNode] = []
-        func_stack: list[CtxNode] = []
+        func_stack: list[tuple[str, str]] = []
 
-        def add_function_node(def_node, name: str, kind: str, signature: str, parent_id: Optional[str] = None):
+        def add_func_node(def_node, name: str, kind: str, signature: str, parent_id: Optional[str] = None) -> str:
             start = def_node.start_point[0] + 1
             end = def_node.end_point[0] + 1
             node_id = _make_node_id(kind, rel_path, name)
@@ -138,10 +137,23 @@ class CtxParser:
                 parent=parent_id or file_node_id,
             )
             nodes.append(node)
+            edges.append(CtxEdge(from_node=file_node_id, to_node=node_id, edge_type="contains"))
+            if class_stack:
+                edges.append(CtxEdge(from_node=class_stack[-1].id, to_node=node_id, edge_type="contains"))
+            func_stack.append((node_id, name))
             return node_id
 
-        def add_call_edges(call_node, source_lines: bytes):
-            pass
+        def on_call(node):
+            if not func_stack:
+                return
+            try:
+                func_text = _get_text(node, source)
+                call_name = func_text.split("(")[0].strip().split(".")[-1]
+                if call_name and call_name.isidentifier():
+                    called_id = _make_node_id("function", rel_path, call_name)
+                    edges.append(CtxEdge(from_node=func_stack[-1][0], to_node=called_id, edge_type="calls"))
+            except Exception:
+                pass
 
         cursor = tree.walk()
 
@@ -151,14 +163,12 @@ class CtxParser:
             if nt == "function_definition":
                 name_bytes = node.child_by_field_name("name")
                 name = name_bytes.text.decode() if name_bytes else "unknown"
-                params_node = node.child_by_field_name("parameters")
-                sig = _get_text(node, source).split("\n")[0].strip()
+                try:
+                    sig = _get_text(node, source).split("\n")[0].strip()
+                except Exception:
+                    sig = f"def {name}(...)"
                 parent_id = class_stack[-1].id if class_stack else None
-                func_id = add_function_node(node, name, "function", sig, parent_id)
-                func_stack.append(CtxNode(id=func_id, kind="function", name=name, path=rel_path, start_line=0, end_line=0))
-                edges.append(CtxEdge(from_node=file_node_id, to_node=func_id, edge_type="contains"))
-                if class_stack:
-                    edges.append(CtxEdge(from_node=class_stack[-1].id, to_node=func_id, edge_type="contains"))
+                add_func_node(node, name, "function", sig, parent_id)
 
             elif nt == "class_definition":
                 name_bytes = node.child_by_field_name("name")
@@ -173,63 +183,69 @@ class CtxParser:
                 edges.append(CtxEdge(from_node=file_node_id, to_node=node_id, edge_type="contains"))
                 class_stack.append(class_node)
 
-                bases = node.child_by_field_name("base_types")
-                if bases:
-                    for base in bases.children:
-                        if base.type == "identifier":
-                            base_name = base.text.decode()
-                            base_id = _make_node_id("class", rel_path, base_name)
-                            edges.append(CtxEdge(from_node=node_id, to_node=base_id, edge_type="inherits"))
+                try:
+                    bases = node.child_by_field_name("base_types")
+                    if bases:
+                        for base in bases.children:
+                            if base.type == "identifier":
+                                base_name = base.text.decode()
+                                base_id = _make_node_id("class", rel_path, base_name)
+                                edges.append(CtxEdge(from_node=node_id, to_node=base_id, edge_type="inherits"))
+                except Exception:
+                    pass
 
             elif nt == "import_statement":
-                for child in node.children:
-                    if child.type == "dotted_name":
-                        import_name = child.text.decode()
-                        imp_id = _make_node_id("import", rel_path, import_name)
-                        imp_node = CtxNode(
-                            id=imp_id, kind="import", name=import_name, path=rel_path, start_line=node.start_point[0] + 1, end_line=node.end_point[0] + 1
-                        )
-                        nodes.append(imp_node)
-                        edges.append(CtxEdge(from_node=file_node_id, to_node=imp_id, edge_type="contains"))
-                        edges.append(CtxEdge(from_node=file_node_id, to_node=imp_id, edge_type="imports"))
+                try:
+                    for child in node.children:
+                        if child.type == "dotted_name":
+                            import_name = child.text.decode()
+                            imp_id = _make_node_id("import", rel_path, import_name)
+                            imp_node = CtxNode(
+                                id=imp_id,
+                                kind="import",
+                                name=import_name,
+                                path=rel_path,
+                                start_line=node.start_point[0] + 1,
+                                end_line=node.end_point[0] + 1,
+                            )
+                            nodes.append(imp_node)
+                            edges.append(CtxEdge(from_node=file_node_id, to_node=imp_id, edge_type="imports"))
+                except Exception:
+                    pass
 
             elif nt == "import_from_statement":
-                module_node = node.child_by_field_name("module_name")
-                module_name = module_node.text.decode() if module_node else "unknown"
-                import_id = _make_node_id("import", rel_path, module_name)
-                import_node = CtxNode(
-                    id=import_id, kind="import", name=module_name, path=rel_path, start_line=node.start_point[0] + 1, end_line=node.end_point[0] + 1
-                )
-                nodes.append(import_node)
-                edges.append(CtxEdge(from_node=file_node_id, to_node=import_id, edge_type="contains"))
-                edges.append(CtxEdge(from_node=file_node_id, to_node=import_id, edge_type="imports"))
+                try:
+                    module_node = node.child_by_field_name("module_name")
+                    module_name = module_node.text.decode() if module_node else "unknown"
+                    import_id = _make_node_id("import", rel_path, module_name)
+                    import_node = CtxNode(
+                        id=import_id,
+                        kind="import",
+                        name=module_name,
+                        path=rel_path,
+                        start_line=node.start_point[0] + 1,
+                        end_line=node.end_point[0] + 1,
+                    )
+                    nodes.append(import_node)
+                    edges.append(CtxEdge(from_node=file_node_id, to_node=import_id, edge_type="imports"))
+                except Exception:
+                    pass
 
             elif nt == "call":
-                func_text = _get_text(node, source).strip()
-                call_name = func_text.split("(")[0].strip()
-                if call_name and not call_name.startswith("#"):
-                    called_id = _make_node_id("function", rel_path, call_name)
-                    current_func = func_stack[-1] if func_stack else None
-                    if current_func:
-                        edges.append(CtxEdge(from_node=current_func.id, to_node=called_id, edge_type="calls"))
+                on_call(node)
 
             for child in node.children:
                 walk(child)
 
-            if nt == "class_definition":
+            if nt == "class_definition" and class_stack:
                 class_stack.pop()
+            if nt == "function_definition" and func_stack:
+                func_stack.pop()
 
-            if nt == "function_definition":
-                if func_stack:
-                    func_stack.pop()
-
-        walk(node)
-
-        return nodes, edges, interfaces
+        walk(tree.root_node)
+        return nodes, edges, []
 
     def parse_repo(self) -> CtxDocument:
-        import time
-
         start = time.time()
         all_nodes: list[CtxNode] = []
         all_edges: list[CtxEdge] = []
@@ -237,7 +253,7 @@ class CtxParser:
         span_map: dict[str, dict] = {}
 
         for root, dirs, files in os.walk(self.repo_path):
-            dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", ".venv", "venv", "node_modules", ".pytest_cache")]
+            dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", ".venv", "venv", "node_modules", ".pytest_cache", ".ctx")]
             for file in sorted(files):
                 if not file.endswith(".py"):
                     continue
@@ -275,7 +291,7 @@ class CtxParser:
                 "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 "language": self.language,
                 "version": "1.0",
-                "parser": f"tree-sitter-python@0.23.4",
+                "parser": "tree-sitter-python@0.25.0",
                 "parse_time_seconds": round(elapsed, 3),
             },
             nodes=[n.to_dict() for n in sorted(deduped_nodes.values(), key=lambda x: (x.path, x.start_line))],
@@ -291,6 +307,11 @@ class CtxParser:
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
+        def str_representer(dumper, data):
+            style = "|" if "\n" in data else None
+            return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
+
+        yaml.add_representer(str, str_representer)
         content = yaml.dump(document.to_dict(), sort_keys=False, allow_unicode=True)
 
         with open(output_path, "w", encoding="utf-8") as f:

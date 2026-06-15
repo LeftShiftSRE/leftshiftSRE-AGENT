@@ -1,0 +1,42 @@
+{
+  "payment_service": {
+    "operation": "charge",
+    "p99_latency_ms": 2450,
+    "p95_latency_ms": 1200,
+    "error_rate": 0.03,
+    "throughput_rps": 450,
+    "last_incident": "2026-05-28T14:30:00Z",
+    "db_pool_usage_pct": 87,
+    "active_connections": 87
+  },
+  "order_service": {
+    "operation": "create_order",
+    "p99_latency_ms": 380,
+    "p95_latency_ms": 180,
+    "error_rate": 0.008,
+    "throughput_rps": 320,
+    "last_incident": "2026-04-15T09:00:00Z",
+    "db_pool_usage_pct": 45,
+    "active_connections": 45
+  },
+  "inventory_service": {
+    "operation": "reserve",
+    "p99_latency_ms": 45,
+    "p95_latency_ms": 30,
+    "error_rate": 0.001,
+    "throughput_rps": 890,
+    "last_incident": null,
+    "db_pool_usage_pct": 12,
+    "active_connections": 12
+  },
+  "gateway": {
+    "operation": "POST /order",
+    "p99_latency_ms": 510,
+    "p95_latency_ms": 240,
+    "error_rate": 0.015,
+    "throughput_rps": 310,
+    "last_incident": "2026-04-15T09:05:00Z",
+    "db_pool_usage_pct": 0,
+    "active_connections": 0
+  }
+}

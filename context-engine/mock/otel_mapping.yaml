@@ -1,0 +1,20 @@
+mappings:
+  - service: "payment_service"
+    operation: "charge"
+    description: "PaymentService.charge() — the main payment processing function (SLOW)"
+
+  - service: "order_service"
+    operation: "create_order"
+    description: "OrderService.create_order() — order creation with downstream calls"
+
+  - service: "inventory_service"
+    operation: "reserve"
+    description: "InventoryService.reserve() — inventory reservation (FAST)"
+
+  - service: "gateway"
+    operation: "POST /order"
+    description: "API gateway POST /order endpoint"
+
+  - service: "payment_service"
+    operation: "db_query"
+    description: "Database query within payment_service (N+1 pattern)"

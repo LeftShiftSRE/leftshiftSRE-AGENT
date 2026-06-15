@@ -78,9 +78,10 @@ class RiskScorer:
         return RiskResult(overall_score=overall, level=level, node_scores=node_scores)
 
     def _find_modified_nodes(self, modified_files: list[str]) -> list:
+        normalized = {p.replace("\\", "/") for p in modified_files}
         modified_nodes = []
         for node in self.graph.nodes.values():
-            if node.path in modified_files:
+            if node.path.replace("\\", "/") in normalized and node.kind in ("function", "class", "method"):
                 modified_nodes.append(node)
         return modified_nodes
 

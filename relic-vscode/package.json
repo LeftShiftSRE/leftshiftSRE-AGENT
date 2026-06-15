@@ -1,25 +1,116 @@
-[project]
-name = "relic-vscode"
-version = "0.1.0"
-description = "Relic SRE Agent — VS Code Extension"
-displayName = "Relic SRE Agent"
-publisher = "leftshiftsre"
-license = "MIT"
-repository = "https://github.com/leftshiftsre/relic"
-engines = {vscode = "^1.90.0"}
-categories = ["Other", "Developer Tools"]
-keywords = ["sre", "observability", "mcp", "splunk"]
-
-[scripts]
-vscode:prepublish = "npm run compile"
-compile = "tsc -p ./"
-watch = "tsc -watch"
-
-[dependencies]
-"@modelcontextprotocol/sdk" = "^1.0.0"
-vscode = "^1.1.37"
-
-[dev-dependencies]
-"@types/node" = "^20.0.0"
-"@types/vscode" = "^1.90.0"
-typescript = "^5.4.0"
+{
+  "name": "relic-vscode",
+  "version": "0.1.0",
+  "description": "Relic SRE Agent — Code-Aware Observability in VS Code",
+  "displayName": "Relic SRE Agent",
+  "publisher": "leftshiftsre",
+  "license": "MIT",
+  "repository": "https://github.com/leftshiftsre/relic",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["Other", "Developer Tools"],
+  "keywords": ["sre", "observability", "mcp", "splunk", "code-context"],
+  "main": "dist/extension.js",
+  "activationEvents": [
+    "onCommand:relic.parseRepo",
+    "onCommand:relic.riskScore",
+    "onCommand:relic.openChat",
+    "onCommand:relic.impactMap"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "relic.parseRepo",
+        "title": "Relic: Parse Repository",
+        "category": "Relic"
+      },
+      {
+        "command": "relic.riskScore",
+        "title": "Relic: Show Risk Score",
+        "category": "Relic"
+      },
+      {
+        "command": "relic.openChat",
+        "title": "Relic: Open SRE Chat",
+        "category": "Relic"
+      },
+      {
+        "command": "relic.impactMap",
+        "title": "Relic: Show Impact Map",
+        "category": "Relic"
+      }
+    ],
+    "configuration": {
+      "title": "Relic SRE Agent",
+      "properties": {
+        "relic.repoPath": {
+          "type": "string",
+          "default": "${workspaceFolder}",
+          "description": "Path to the repository to analyze"
+        },
+        "relic.ctxFilePath": {
+          "type": "string",
+          "default": "${workspaceFolder}/.ctx/repo.ctx",
+          "description": "Path to the generated .ctx file"
+        },
+        "relic.enginePath": {
+          "type": "string",
+          "default": "relic",
+          "description": "Path to the relic CLI binary (or 'relic' if on PATH)"
+        },
+        "relic.useMockData": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use mock Splunk data instead of real Splunk MCP Server"
+        },
+        "relic.splunkMcpUrl": {
+          "type": "string",
+          "default": "http://localhost:8089",
+          "description": "Splunk MCP Server URL"
+        },
+        "relic.splunkToken": {
+          "type": "string",
+          "default": "",
+          "description": "Splunk authentication token"
+        },
+        "relic.autoRiskOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically compute risk score on file save"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "relic-sidebar",
+          "title": "Relic",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "relic-sidebar": [
+        {
+          "id": "relic.impact",
+          "name": "Impact Map"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "vscode": "^1.1.37"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.4.0"
+  }
+}

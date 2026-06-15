@@ -1,0 +1,16 @@
+pyproject.toml
+src/relic/__init__.py
+src/relic/cli.py
+src/relic/graph.py
+src/relic/otel_mapper.py
+src/relic/parser.py
+src/relic/risk.py
+src/relic/server.py
+src/relic/spl_query_gen.py
+src/relic/splunk_client.py
+src/relic.egg-info/PKG-INFO
+src/relic.egg-info/SOURCES.txt
+src/relic.egg-info/dependency_links.txt
+src/relic.egg-info/entry_points.txt
+src/relic.egg-info/requires.txt
+src/relic.egg-info/top_level.txt

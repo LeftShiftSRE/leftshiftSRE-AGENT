@@ -1,0 +1,2 @@
+[console_scripts]
+relic = relic.cli:main

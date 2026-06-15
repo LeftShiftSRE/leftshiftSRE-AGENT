@@ -1,0 +1,8 @@
+{"timestamp": "2026-06-14T10:00:00Z", "service": "payment_service", "operation": "charge", "level": "ERROR", "message": "ConnectionTimeout: database connection pool exhausted", "trace_id": "abc123def456", "user_id": "usr_1001"}
+{"timestamp": "2026-06-14T10:05:00Z", "service": "payment_service", "operation": "charge", "level": "ERROR", "message": "PoolExhausted: max connections reached", "trace_id": "def456ghi789", "user_id": "usr_1002"}
+{"timestamp": "2026-06-14T10:10:00Z", "service": "payment_service", "operation": "charge", "level": "WARN", "message": "Slow query detected: 2.4s", "trace_id": "ghi789jkl012", "user_id": "usr_1003"}
+{"timestamp": "2026-06-14T10:15:00Z", "service": "order_service", "operation": "create_order", "level": "ERROR", "message": "UpstreamTimeout: payment_service.charge timed out after 5s", "trace_id": "jkl012mno345", "user_id": "usr_1001"}
+{"timestamp": "2026-06-14T10:20:00Z", "service": "inventory_service", "operation": "reserve", "level": "INFO", "message": "Successfully reserved 100 units", "trace_id": "mno345pqr678", "user_id": "usr_1004"}
+{"timestamp": "2026-06-14T10:25:00Z", "service": "gateway", "operation": "POST /order", "level": "ERROR", "message": "OrderFailed: downstream timeout from order_service", "trace_id": "pqr678stu901", "user_id": "usr_1005"}
+{"timestamp": "2026-06-14T11:00:00Z", "service": "payment_service", "operation": "charge", "level": "INFO", "message": "Charge processed: amount=99.99", "trace_id": "stu901vwx234", "user_id": "usr_1006"}
+{"timestamp": "2026-06-14T11:05:00Z", "service": "order_service", "operation": "create_order", "level": "INFO", "message": "Order created successfully: ORD-12345", "trace_id": "vwx234yza567", "user_id": "usr_1006"}
